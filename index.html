@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + TS</title>
+  </head>
+  <body>
+    <calcite-shell>
+      <arcgis-map>
+        <arcgis-video-player></arcgis-video-player>
+        <arcgis-placement position="bottom-right">
+          <calcite-block collapsible heading="Opacity" open>
+            <calcite-label>
+              opacity (%)
+              <calcite-slider
+                id="opacity-slider"
+                value="100"
+                label-handles
+                label-ticks
+                max-label="100"
+                min-label="0"
+                ticks="100"
+              ></calcite-slider>
+            </calcite-label>
+            <calcite-label>
+              frameOpacity (%)
+              <calcite-slider
+                id="frame-opacity-slider"
+                value="100"
+                label-handles
+                label-ticks
+                max-label="100"
+                min-label="0"
+                ticks="100"
+              ></calcite-slider>
+            </calcite-label>
+          </calcite-block>
+          <calcite-block collapsible heading="Frame Effects" open>
+            <calcite-label>
+              Invert
+              <calcite-switch id="frame-effect-invert-switch"></calcite-switch>
+            </calcite-label>
+            <calcite-label>
+              Brightness (%)
+              <calcite-slider
+                id="frame-effect-brightness-slider"
+                value="100"
+                label-handles
+                label-ticks
+                max="200"
+                max-label="100"
+                min-label="0"
+                ticks="100"
+              ></calcite-slider>
+            </calcite-label>
+            <calcite-label>
+              Contrast (%)
+              <calcite-slider
+                id="frame-effect-contrast-slider"
+                value="100"
+                label-handles
+                label-ticks
+                max="200"
+                max-label="100"
+                min-label="0"
+                ticks="100"
+              ></calcite-slider>
+            </calcite-label>
+            <calcite-label>
+              Saturation (%)
+              <calcite-slider
+                id="frame-effect-saturate-slider"
+                value="100"
+                label-handles
+                label-ticks
+                max="200"
+                max-label="100"
+                min-label="0"
+                ticks="100"
+              ></calcite-slider>
+            </calcite-label>
+          </calcite-block>
+        </arcgis-placement>
+      </arcgis-map>
+    </calcite-shell>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
