@@ -1,4 +1,8 @@
+import Color from "@arcgis/core/Color";
 import Map from "@arcgis/core/Map";
+import SimpleFillSymbol from "@arcgis/core/Symbols/SimpleFillSymbol";
+import SimpleLineSymbol from "@arcgis/core/Symbols/SimpleLineSymbol";
+import SimpleMarkerSymbol from "@arcgis/core/Symbols/SimpleMarkerSymbol";
 import VideoLayer from "@arcgis/core/layers/VideoLayer";
 import "@arcgis/map-components/components/arcgis-map";
 import "@arcgis/map-components/components/arcgis-placement";
@@ -32,16 +36,87 @@ const viewElement = document.querySelector("arcgis-map")!;
 const videoPlayerElement = document.querySelector("arcgis-video-player")!;
 
 const videoLayer = new VideoLayer({
+  autoplay: true,
+  // blendMode: "vivid-light",
+  // effect: "brightness(500%) hue-rotate(270deg) contrast(200%)",
+  // frameEffect: "invert()",
+  // frameOpacity: 0.1,
+  frameCenterSymbol: new SimpleMarkerSymbol({
+    angle: 0,
+    color: new Color([0, 0, 255, 1]),
+    outline: new SimpleLineSymbol({
+      cap: "round",
+      color: new Color([0, 255, 0, 1]),
+      join: "round",
+      miterLimit: 1,
+      style: "solid",
+      width: 2,
+    }),
+    size: 12,
+    style: "triangle",
+    xoffset: 0,
+    yoffset: 0,
+  }),
+  frameOutlineSymbol: new SimpleFillSymbol({
+    color: new Color([255, 0, 0, 1]),
+    outline: new SimpleLineSymbol({
+      cap: "round",
+      color: new Color([0, 255, 0, 0.1]),
+      join: "round",
+      miterLimit: 1,
+      style: "dot",
+      width: 3,
+    }),
+    style: "vertical",
+  }),
+  muted: true,
+  // opacity: 0.5,
+  sensorSightLineSymbol: new SimpleLineSymbol({
+    cap: "round",
+    color: new Color([255, 255, 0, 1]),
+    join: "round",
+    miterLimit: 1,
+    style: "dash-dot",
+    width: 3,
+  }),
+  sensorSymbol: new SimpleMarkerSymbol({
+    angle: 0,
+    color: new Color([0, 0, 255, 1]),
+    outline: new SimpleLineSymbol({
+      cap: "round",
+      color: new Color([0, 255, 0, 1]),
+      join: "round",
+      miterLimit: 1,
+      style: "solid",
+      width: 3,
+    }),
+    size: 12,
+    style: "triangle",
+    xoffset: 0,
+    yoffset: 0,
+  }),
+  sensorTrailSymbol: new SimpleLineSymbol({
+    cap: "round",
+    color: new Color([255, 0, 0, 1]),
+    join: "round",
+    miterLimit: 1,
+    style: "dash",
+    width: 12,
+  }),
+  start: 6,
+  // telemetryColor: new Color([255, 0, 0, 0.5]),
+  telemetryDisplay: {
+    frame: true,
+    frameCenter: true,
+    frameOutline: true,
+    lineOfSight: true,
+    sensorLocation: true,
+    sensorTrail: true,
+  },
+  title: "The best video layer in the world",
   url: "https://dev000276.esri.com/video/rest/services/cheyenne1/VideoServer/0",
+  visible: true,
 });
-videoLayer.telemetryDisplay = {
-  frame: true,
-  frameCenter: true,
-  frameOutline: true,
-  lineOfSight: true,
-  sensorLocation: true,
-  sensorTrail: true,
-};
 
 const map = new Map({
   basemap: "topo-vector",
