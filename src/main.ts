@@ -34,6 +34,9 @@ const frameEffectSaturateSlider = document.querySelector(
 const frameOpacitySlider = document.querySelector(
   "#frame-opacity-slider"
 )! as HTMLCalciteSliderElement;
+const loadButton = document.querySelector(
+  "#load-button"
+)! as HTMLCalciteButtonElement;
 const opacitySlider = document.querySelector(
   "#opacity-slider"
 )! as HTMLCalciteSliderElement;
@@ -115,7 +118,7 @@ const videoLayer = new VideoLayer({
     width: 12,
   }),
   start: 6,
-  // telemetryColor: new Color([255, 0, 0, 0.5]),
+  // telemetryColor: new Color([0, 0, 0, 1]),
   telemetryDisplay: {
     frame: true,
     frameCenter: true,
@@ -136,7 +139,7 @@ const webMap = new WebMap({
 
 viewElement.map = webMap;
 
-load();
+init();
 
 opacitySlider.addEventListener("calciteSliderInput", () => {
   const value = opacitySlider.value;
@@ -176,10 +179,15 @@ frameEffectSaturateSlider.addEventListener("calciteSliderInput", () => {
   updateFrameEffect();
 });
 
+loadButton.addEventListener("click", async () => {
+  console.log("load button clicked");
+  viewElement.itemId = webMap.portalItem?.id;
+});
+
 saveButton.addEventListener("click", async () => {
   console.log("save button clicked");
   const result = await webMap.save();
-  console.log("Save result:", result.id);
+  console.log("Save result:", result.id, result);
 });
 
 saveAsButton.addEventListener("click", async () => {
@@ -189,12 +197,13 @@ saveAsButton.addEventListener("click", async () => {
   const result = await webMap.saveAs(
     new PortalItem({ title: "My Video Layer Web Map" })
   );
-  console.log("Save As result:", result.id);
+  console.log("Save As result:", result.id, result);
   webMap.portalItem = result;
   saveButton.disabled = false;
+  loadButton.disabled = false;
 });
 
-async function load() {
+async function init() {
   await viewElement.viewOnReady();
   console.log("the view is ready");
 

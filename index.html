@@ -11,7 +11,7 @@
       <arcgis-map>
         <arcgis-video-player></arcgis-video-player>
         <arcgis-placement position="bottom-right">
-          <calcite-block collapsible heading="Opacity" open>
+          <calcite-block collapsible heading="Opacity" expanded>
             <calcite-label>
               opacity (%)
               <calcite-slider
@@ -37,7 +37,7 @@
               ></calcite-slider>
             </calcite-label>
           </calcite-block>
-          <calcite-block collapsible heading="Frame Effects" open>
+          <calcite-block collapsible heading="Frame Effects" expanded>
             <calcite-label>
               Invert
               <calcite-switch id="frame-effect-invert-switch"></calcite-switch>
@@ -84,7 +84,10 @@
           </calcite-block>
         </arcgis-placement>
         <arcgis-placement position="bottom-left">
-          <calcite-block collapsible heading="Web Maps" open>
+          <calcite-block collapsible heading="Web Maps" expanded>
+            <calcite-button id="load-button" icon-start="download" disabled
+              >Load</calcite-button
+            >
             <calcite-button disabled icon-start="save" id="save-button"
               >Save</calcite-button
             >
