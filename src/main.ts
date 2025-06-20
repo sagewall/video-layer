@@ -15,6 +15,7 @@ import "@esri/calcite-components/components/calcite-label";
 import "@esri/calcite-components/components/calcite-shell";
 import "@esri/calcite-components/components/calcite-slider";
 import "@esri/calcite-components/components/calcite-switch";
+import { airplanePath } from "./airplane-path";
 import "./style.css";
 
 esriConfig.portalUrl = "https://devtesting.mapsdevext.arcgis.com/";
@@ -94,7 +95,7 @@ const videoLayer = new VideoLayer({
     width: 3,
   }),
   sensorSymbol: new SimpleMarkerSymbol({
-    angle: 0,
+    angle: 90,
     color: new Color([0, 0, 255, 1]),
     outline: new SimpleLineSymbol({
       cap: "round",
@@ -104,11 +105,16 @@ const videoLayer = new VideoLayer({
       style: "solid",
       width: 3,
     }),
+    path: airplanePath,
     size: 24,
-    style: "triangle",
     xoffset: 0,
     yoffset: 0,
   }),
+  // @ts-ignore
+  sensorSymbolOrientation: {
+    source: "platformHeading", // "cameraAzimuth" or "platformHeading"
+    symbolOffset: 0,
+  },
   sensorTrailSymbol: new SimpleLineSymbol({
     cap: "round",
     color: new Color([255, 0, 0, 1]),
