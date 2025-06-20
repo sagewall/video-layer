@@ -138,9 +138,11 @@ const videoLayer = new VideoLayer({
 });
 
 const webMap = new WebMap({
-  basemap: "topo-vector",
-  layers: [videoLayer],
+  portalItem: {
+    id: "e61993e233b34bf4a12441b61129e15a",
+  },
 });
+webMap.layers.add(videoLayer);
 
 viewElement.map = webMap;
 
