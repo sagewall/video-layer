@@ -13,7 +13,7 @@
     "vite": "^6.3.5"
   },
   "dependencies": {
-    "@arcgis/core": "4.33.0-next.20250606",
-    "@arcgis/map-components": "4.33.0-next.152"
+    "@arcgis/core": "4.33.0-next.20250620",
+    "@arcgis/map-components": "4.33.0-next.167"
   }
 }
