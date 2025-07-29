@@ -129,14 +129,9 @@ saveAsButton.addEventListener("click", async () => {
   loadButton.disabled = false;
 });
 
-testingPropertiesSwitch.addEventListener("calciteSwitchChange", () => {
-  updateVideoLayer(videoLayerSelect.value);
-});
-
 videoLayerSelect.addEventListener("calciteSelectChange", async (event) => {
   const selectedOption = event.target as HTMLCalciteSelectElement;
-  const selectedValue = selectedOption.value;
-  updateVideoLayer(selectedValue);
+  updateVideoLayer(selectedOption.value);
 });
 
 async function getPortalItems(portalUrl: string) {
@@ -168,7 +163,7 @@ async function init() {
     videoLayerSelect.appendChild(option);
   });
 
-  updateVideoLayer(portalItems[0].id);
+  await updateVideoLayer(portalItems[0].id);
 
   state.webMap = new WebMap({
     portalItem: {
@@ -212,14 +207,16 @@ async function updateVideoLayer(id: string) {
   });
   state.webMap.layers.remove(state.videoLayer);
   state.videoLayer = layer as VideoLayer;
+  state.videoLayer.frameEffect = "brightness(25%) contrast(25%) saturate(25%)";
   state.webMap.layers.add(state.videoLayer);
   videoPlayerElement.layer = state.videoLayer;
   if (testingPropertiesSwitch.checked) {
-    addTestingProperties();
+    await addTestingProperties();
   }
 }
 
-function addTestingProperties() {
+async function addTestingProperties() {
+  await state.videoLayer.load();
   state.videoLayer.autoplay = true;
   state.videoLayer.blendMode = "vivid-light";
   state.videoLayer.effect =
