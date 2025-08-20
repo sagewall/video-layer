@@ -9,34 +9,40 @@
   <body>
     <calcite-shell>
       <arcgis-map>
-        <arcgis-video-player></arcgis-video-player>
-        <arcgis-placement position="bottom-right">
-          <calcite-block collapsible heading="Opacity" expanded>
-            <calcite-label>
-              opacity (%)
-              <calcite-slider
-                id="opacity-slider"
-                value="100"
-                label-handles
-                label-ticks
-                max-label="100"
-                min-label="0"
-                ticks="100"
-              ></calcite-slider>
-            </calcite-label>
-            <calcite-label>
-              frameOpacity (%)
-              <calcite-slider
-                id="frame-opacity-slider"
-                value="100"
-                label-handles
-                label-ticks
-                max-label="100"
-                min-label="0"
-                ticks="100"
-              ></calcite-slider>
-            </calcite-label>
-          </calcite-block>
+        <arcgis-video-player slot="top-left"></arcgis-video-player>
+
+        <calcite-block
+          collapsible
+          heading="Opacity"
+          expanded
+          slot="bottom-right"
+        >
+          <calcite-label>
+            opacity (%)
+            <calcite-slider
+              id="opacity-slider"
+              value="100"
+              label-handles
+              label-ticks
+              max-label="100"
+              min-label="0"
+              ticks="100"
+            ></calcite-slider>
+          </calcite-label>
+          <calcite-label>
+            frameOpacity (%)
+            <calcite-slider
+              id="frame-opacity-slider"
+              value="100"
+              label-handles
+              label-ticks
+              max-label="100"
+              min-label="0"
+              ticks="100"
+            ></calcite-slider>
+          </calcite-label>
+        </calcite-block>
+        <div slot="bottom-left">
           <calcite-block collapsible heading="Frame Effects" expanded>
             <calcite-label>
               Invert
@@ -82,8 +88,7 @@
               ></calcite-slider>
             </calcite-label>
           </calcite-block>
-        </arcgis-placement>
-        <arcgis-placement position="bottom-left">
+
           <calcite-block collapsible heading="Web Maps" expanded>
             <calcite-button id="load-button" icon-start="download" disabled
               >Load</calcite-button
@@ -105,7 +110,7 @@
               <calcite-select id="video-layer-select"></calcite-select>
             </calcite-label>
           </calcite-block>
-        </arcgis-placement>
+        </div>
       </arcgis-map>
     </calcite-shell>
     <script type="module" src="/src/main.ts"></script>
