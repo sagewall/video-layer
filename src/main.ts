@@ -129,6 +129,14 @@ saveAsButton.addEventListener("click", async () => {
   loadButton.disabled = false;
 });
 
+testingPropertiesSwitch.addEventListener("calciteSwitchChange", async () => {
+  if (testingPropertiesSwitch.checked) {
+    await addTestingProperties();
+  } else {
+    await removeTestingProperties();
+  }
+});
+
 videoLayerSelect.addEventListener("calciteSelectChange", async (event) => {
   const selectedOption = event.target as HTMLCalciteSelectElement;
   updateVideoLayer(selectedOption.value);
@@ -222,6 +230,7 @@ async function addTestingProperties() {
   state.videoLayer.effect =
     "brightness(500%) hue-rotate(270deg) contrast(200%)";
   state.videoLayer.frameEffect = "invert()";
+  frameEffectInvertSwitch.checked = true;
   state.videoLayer.frameOpacity = 0.1;
   state.videoLayer.frameCenterSymbol = new SimpleMarkerSymbol({
     angle: 0,
@@ -299,5 +308,53 @@ async function addTestingProperties() {
     sensorLocation: true,
     sensorTrail: true,
   };
+  state.videoLayer.visible = true;
+}
+
+async function removeTestingProperties() {
+  await state.videoLayer.load();
+  state.videoLayer.autoplay = false;
+  state.videoLayer.blendMode = "normal";
+  state.videoLayer.effect = null;
+  state.videoLayer.frameEffect = null;
+  frameEffectInvertSwitch.checked = false;
+  state.videoLayer.frameOpacity = 1;
+  state.videoLayer.frameCenterSymbol = new SimpleMarkerSymbol({
+    angle: 0,
+    color: new Color([255, 127, 0]),
+    size: 10,
+    style: "cross",
+  });
+  state.videoLayer.frameOutlineSymbol = new SimpleFillSymbol({
+    color: new Color([0, 0, 0, 0.05]),
+    outline: new SimpleLineSymbol({
+      color: new Color([255, 127, 0]),
+      width: 2,
+    }),
+  });
+  state.videoLayer.muted = false;
+  state.videoLayer.opacity = 1;
+  state.videoLayer.sensorSightLineSymbol = new SimpleLineSymbol({
+    color: new Color([255, 127, 0]),
+    width: 1,
+  });
+  state.videoLayer.sensorSymbol = new SimpleMarkerSymbol({
+    angle: 0,
+    color: new Color([255, 127, 0]),
+    outline: { color: [255, 255, 255], width: 1.33 },
+    size: 10,
+    style: "circle",
+  });
+  // @ts-ignore
+  state.videoLayer.sensorSymbolOrientation = {
+    source: "platformHeading",
+    symbolOffset: 0,
+  };
+  state.videoLayer.sensorTrailSymbol = new SimpleLineSymbol({
+    color: new Color([255, 127, 0]),
+    width: 1,
+  });
+  state.videoLayer.start = 0;
+  state.videoLayer.telemetryDisplay = null;
   state.videoLayer.visible = true;
 }
