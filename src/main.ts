@@ -118,6 +118,8 @@ saveButton.addEventListener("click", async () => {
 
 saveAsButton.addEventListener("click", async () => {
   await state.webMap.loadAll();
+  // @ts-expect-error
+  state.videoLayer.portalItem = null;
   state.webMap.updateFrom(viewElement.view);
   console.log("save as button clicked");
   const result = await state.webMap.saveAs(
