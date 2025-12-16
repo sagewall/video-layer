@@ -1,13 +1,13 @@
-import Color from "@arcgis/core/Color";
-import SimpleFillSymbol from "@arcgis/core/Symbols/SimpleFillSymbol";
-import SimpleLineSymbol from "@arcgis/core/Symbols/SimpleLineSymbol";
-import SimpleMarkerSymbol from "@arcgis/core/Symbols/SimpleMarkerSymbol";
-import WebMap from "@arcgis/core/WebMap";
-import esriConfig from "@arcgis/core/config";
-import Layer from "@arcgis/core/layers/Layer";
-import VideoLayer from "@arcgis/core/layers/VideoLayer";
-import PortalItem from "@arcgis/core/portal/PortalItem";
-import esriRequest from "@arcgis/core/request";
+import Color from "@arcgis/core/Color.js";
+import esriConfig from "@arcgis/core/config.js";
+import Layer from "@arcgis/core/layers/Layer.js";
+import VideoLayer from "@arcgis/core/layers/VideoLayer.js";
+import PortalItem from "@arcgis/core/portal/PortalItem.js";
+import esriRequest from "@arcgis/core/request.js";
+import SimpleFillSymbol from "@arcgis/core/symbols/SimpleFillSymbol.js";
+import SimpleLineSymbol from "@arcgis/core/symbols/SimpleLineSymbol.js";
+import SimpleMarkerSymbol from "@arcgis/core/symbols/SimpleMarkerSymbol.js";
+import WebMap from "@arcgis/core/WebMap.js";
 import "@arcgis/map-components/components/arcgis-map";
 import "@arcgis/map-components/components/arcgis-placement";
 import "@arcgis/map-components/components/arcgis-video-player";
@@ -68,25 +68,11 @@ const videoPlayerElement = document.querySelector("arcgis-video-player")!;
 init();
 
 opacitySlider.addEventListener("calciteSliderInput", () => {
-  const value = opacitySlider.value;
-  if (typeof value === "number") {
-    state.videoLayer.opacity = value / 100;
-  } else if (Array.isArray(value) && typeof value[0] === "number") {
-    state.videoLayer.opacity = value[0] / 100;
-  } else {
-    state.videoLayer.opacity = 1;
-  }
+  updateOpacity(opacitySlider.value);
 });
 
 frameOpacitySlider.addEventListener("calciteSliderInput", () => {
-  const value = frameOpacitySlider.value;
-  if (typeof value === "number") {
-    state.videoLayer.frameOpacity = value / 100;
-  } else if (Array.isArray(value) && typeof value[0] === "number") {
-    state.videoLayer.frameOpacity = value[0] / 100;
-  } else {
-    state.videoLayer.frameOpacity = 1;
-  }
+  updateFrameOpacity(frameOpacitySlider.value);
 });
 
 frameEffectBrightnessSlider.addEventListener("calciteSliderInput", () => {
@@ -118,7 +104,6 @@ saveButton.addEventListener("click", async () => {
 
 saveAsButton.addEventListener("click", async () => {
   await state.webMap.loadAll();
-  // @ts-expect-error
   state.videoLayer.portalItem = null;
   state.webMap.updateFrom(viewElement.view);
   console.log("save as button clicked");
@@ -196,9 +181,31 @@ async function init() {
   }
   await viewElement.whenLayerView(state.videoLayer);
   console.log("the layerview is created");
-  viewElement.goTo(state.videoLayer.fullExtent);
+  if (state.videoLayer.fullExtent) {
+    viewElement.goTo(state.videoLayer.fullExtent);
+  }
 
   updateFrameEffect();
+}
+
+function updateOpacity(value: number | number[] | null) {
+  if (typeof value === "number") {
+    state.videoLayer.opacity = value / 100;
+  } else if (Array.isArray(value) && typeof value[0] === "number") {
+    state.videoLayer.opacity = value[0] / 100;
+  } else {
+    state.videoLayer.opacity = 1;
+  }
+}
+
+function updateFrameOpacity(value: number | number[] | null) {
+  if (typeof value === "number") {
+    state.videoLayer.frameOpacity = value / 100;
+  } else if (Array.isArray(value) && typeof value[0] === "number") {
+    state.videoLayer.frameOpacity = value[0] / 100;
+  } else {
+    state.videoLayer.frameOpacity = 1;
+  }
 }
 
 function updateFrameEffect() {
@@ -217,7 +224,10 @@ async function updateVideoLayer(id: string) {
   });
   state.webMap.layers.remove(state.videoLayer);
   state.videoLayer = layer as VideoLayer;
-  state.videoLayer.frameEffect = "brightness(25%) contrast(25%) saturate(25%)";
+  await state.videoLayer.load();
+  updateFrameEffect();
+  updateOpacity(opacitySlider.value);
+  updateFrameOpacity(frameOpacitySlider.value);
   state.webMap.layers.add(state.videoLayer);
   videoPlayerElement.layer = state.videoLayer;
   if (testingPropertiesSwitch.checked) {
@@ -357,6 +367,13 @@ async function removeTestingProperties() {
     width: 1,
   });
   state.videoLayer.start = 0;
-  state.videoLayer.telemetryDisplay = null;
+  state.videoLayer.telemetryDisplay = {
+    frame: false,
+    frameCenter: false,
+    frameOutline: true,
+    lineOfSight: false,
+    sensorLocation: false,
+    sensorTrail: false,
+  };
   state.videoLayer.visible = true;
 }
