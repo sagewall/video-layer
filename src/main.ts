@@ -357,7 +357,6 @@ async function removeTestingProperties() {
     size: 10,
     style: "circle",
   });
-  // @ts-ignore
   state.videoLayer.sensorSymbolOrientation = {
     source: "platformHeading",
     symbolOffset: 0,
@@ -371,9 +370,9 @@ async function removeTestingProperties() {
     frame: false,
     frameCenter: false,
     frameOutline: true,
-    lineOfSight: false,
-    sensorLocation: false,
-    sensorTrail: false,
+    lineOfSight: true,
+    sensorLocation: true,
+    sensorTrail: true,
   };
   state.videoLayer.visible = true;
 }
