@@ -3,13 +3,13 @@ import config from "@arcgis/core/config.js";
 import Layer from "@arcgis/core/layers/Layer.js";
 import VideoLayer from "@arcgis/core/layers/VideoLayer.js";
 import PortalItem from "@arcgis/core/portal/PortalItem.js";
-import esriRequest from "@arcgis/core/request.js";
+import request from "@arcgis/core/request.js";
 import SimpleFillSymbol from "@arcgis/core/symbols/SimpleFillSymbol.js";
 import SimpleLineSymbol from "@arcgis/core/symbols/SimpleLineSymbol.js";
 import SimpleMarkerSymbol from "@arcgis/core/symbols/SimpleMarkerSymbol.js";
 import WebMap from "@arcgis/core/WebMap.js";
+import "@arcgis/map-components/components/arcgis-layer-list";
 import "@arcgis/map-components/components/arcgis-map";
-import "@arcgis/map-components/components/arcgis-placement";
 import "@arcgis/map-components/components/arcgis-video-player";
 import "@esri/calcite-components/components/calcite-block";
 import "@esri/calcite-components/components/calcite-button";
@@ -27,7 +27,7 @@ const state = {
   webMap: new WebMap(),
 };
 
-config.portalUrl = "https://video-portal.idt.geocloud.com/portal";
+config.portalUrl = "https://devtesting.mapsdevext.arcgis.com/";
 
 const frameEffectBrightnessSlider = document.querySelector(
   "#frame-effect-brightness-slider"
@@ -44,36 +44,25 @@ const frameEffectSaturateSlider = document.querySelector(
 const frameOpacitySlider = document.querySelector(
   "#frame-opacity-slider"
 )! as HTMLCalciteSliderElement;
-const loadButton = document.querySelector(
-  "#load-button"
-)! as HTMLCalciteButtonElement;
 const opacitySlider = document.querySelector(
   "#opacity-slider"
 )! as HTMLCalciteSliderElement;
-const saveButton = document.querySelector(
-  "#save-button"
-)! as HTMLCalciteButtonElement;
 const saveAsButton = document.querySelector(
   "#save-as-button"
+)! as HTMLCalciteButtonElement;
+const saveButton = document.querySelector(
+  "#save-button"
 )! as HTMLCalciteButtonElement;
 const testingPropertiesSwitch = document.querySelector(
   "#testing-properties-switch"
 )! as HTMLCalciteSwitchElement;
-const viewElement = document.querySelector("arcgis-map")!;
 const videoLayerSelect = document.querySelector(
   "#video-layer-select"
 )! as HTMLCalciteSelectElement;
+const viewElement = document.querySelector("arcgis-map")!;
 const videoPlayerElement = document.querySelector("arcgis-video-player")!;
 
 init();
-
-opacitySlider.addEventListener("calciteSliderInput", () => {
-  updateOpacity(opacitySlider.value);
-});
-
-frameOpacitySlider.addEventListener("calciteSliderInput", () => {
-  updateFrameOpacity(frameOpacitySlider.value);
-});
 
 frameEffectBrightnessSlider.addEventListener("calciteSliderInput", () => {
   updateFrameEffect();
@@ -87,18 +76,22 @@ frameEffectInvertSwitch.addEventListener("calciteSwitchChange", () => {
   updateFrameEffect();
 });
 
+frameOpacitySlider.addEventListener("calciteSliderInput", () => {
+  updateFrameOpacity(frameOpacitySlider.value);
+});
+
 frameEffectSaturateSlider.addEventListener("calciteSliderInput", () => {
   updateFrameEffect();
 });
 
-loadButton.addEventListener("click", async () => {
-  console.log("load button clicked");
-  viewElement.map = state.webMap;
-  console.log(state.webMap.portalItem?.id);
+opacitySlider.addEventListener("calciteSliderInput", () => {
+  updateOpacity(opacitySlider.value);
 });
 
 saveButton.addEventListener("click", async () => {
   console.log("save button clicked");
+  state.webMap.updateFrom(viewElement.view);
+  videoPlayerElement.layer = state.videoLayer;
   const result = await state.webMap.save();
   console.log("Save result:", result.id, result);
 });
@@ -112,7 +105,6 @@ saveAsButton.addEventListener("click", async () => {
   );
   state.webMap.portalItem = result;
   saveButton.disabled = false;
-  loadButton.disabled = false;
   console.log("Save As result:", result.id, result);
 });
 
@@ -128,109 +120,6 @@ videoLayerSelect.addEventListener("calciteSelectChange", async (event) => {
   const selectedOption = event.target as HTMLCalciteSelectElement;
   updateVideoLayer(selectedOption.value);
 });
-
-async function getPortalItems(portalUrl: string) {
-  const url = portalUrl + "/sharing/rest/search";
-
-  const options = {
-    query: {
-      q: 'type:"Video Service"',
-      f: "json",
-    },
-  };
-
-  const response = await esriRequest(url, options);
-  const portalItems = response.data.results;
-  return portalItems;
-}
-
-async function init() {
-  const portalItems = await getPortalItems(config.portalUrl);
-
-  console.log("Portal Items:", portalItems);
-
-  portalItems.forEach((item: PortalItem) => {
-    const option = document.createElement("calcite-option");
-    option.value = item.id;
-    option.label = item.title ?? "";
-    videoLayerSelect.appendChild(option);
-  });
-
-  await updateVideoLayer(portalItems[0].id);
-
-  state.webMap = new WebMap({
-    portalItem: {
-      id: "d2106b6d89d842c989e432bae5c368e0",
-    },
-  });
-  state.webMap.layers.add(state.videoLayer);
-
-  viewElement.map = state.webMap;
-
-  await viewElement.viewOnReady();
-  console.log("the view is ready");
-
-  if (state.videoLayer.loaded) {
-    console.log("the layer is loaded");
-    videoPlayerElement.layer = state.videoLayer;
-  } else {
-    await state.videoLayer.load();
-    videoPlayerElement.layer = state.videoLayer;
-  }
-  await viewElement.whenLayerView(state.videoLayer);
-  console.log("the layerview is created");
-  if (state.videoLayer.fullExtent) {
-    viewElement.goTo(state.videoLayer.fullExtent);
-  }
-
-  updateFrameEffect();
-}
-
-function updateOpacity(value: number | number[] | null) {
-  if (typeof value === "number") {
-    state.videoLayer.opacity = value / 100;
-  } else if (Array.isArray(value) && typeof value[0] === "number") {
-    state.videoLayer.opacity = value[0] / 100;
-  } else {
-    state.videoLayer.opacity = 1;
-  }
-}
-
-function updateFrameOpacity(value: number | number[] | null) {
-  if (typeof value === "number") {
-    state.videoLayer.frameOpacity = value / 100;
-  } else if (Array.isArray(value) && typeof value[0] === "number") {
-    state.videoLayer.frameOpacity = value[0] / 100;
-  } else {
-    state.videoLayer.frameOpacity = 1;
-  }
-}
-
-function updateFrameEffect() {
-  state.videoLayer.frameEffect = `brightness(${frameEffectBrightnessSlider.value}%) contrast(${frameEffectContrastSlider.value}%) saturate(${frameEffectSaturateSlider.value}%)`;
-  if (frameEffectInvertSwitch.checked) {
-    state.videoLayer.frameEffect += " invert()";
-  }
-}
-
-async function updateVideoLayer(id: string) {
-  const layer = await Layer.fromPortalItem({
-    portalItem: new PortalItem({
-      id,
-    }),
-  });
-  state.webMap.layers.remove(state.videoLayer);
-  state.videoLayer = layer as VideoLayer;
-  await state.videoLayer.load();
-  updateFrameEffect();
-  updateOpacity(opacitySlider.value);
-  updateFrameOpacity(frameOpacitySlider.value);
-  state.webMap.layers.add(state.videoLayer);
-  videoPlayerElement.layer = state.videoLayer;
-  if (testingPropertiesSwitch.checked) {
-    await addTestingProperties();
-  }
-}
 
 async function addTestingProperties() {
   await state.videoLayer.load();
@@ -319,6 +208,66 @@ async function addTestingProperties() {
   state.videoLayer.visible = true;
 }
 
+async function getPortalItems(portalUrl: string) {
+  const url = portalUrl + "/sharing/rest/search";
+
+  const options = {
+    query: {
+      q: 'type:"Video Service"',
+      f: "json",
+    },
+  };
+
+  const response = await request(url, options);
+  const portalItems = response.data.results;
+  return portalItems;
+}
+
+async function init() {
+  const portalItems = await getPortalItems(config.portalUrl);
+
+  console.log("Portal Items:", portalItems);
+
+  portalItems.forEach((item: PortalItem) => {
+    const option = document.createElement("calcite-option");
+    option.value = item.id;
+    option.label = item.title ?? "";
+    videoLayerSelect.appendChild(option);
+  });
+
+  await updateVideoLayer(portalItems[0].id);
+
+  loadWebMap("22f8534d86774882b6d9a559ec3ad477");
+  state.webMap.layers.add(state.videoLayer);
+  await viewElement.viewOnReady();
+  console.log("the view is ready");
+
+  if (state.videoLayer.loaded) {
+    console.log("the layer is loaded");
+    videoPlayerElement.layer = state.videoLayer;
+  } else {
+    await state.videoLayer.load();
+    videoPlayerElement.layer = state.videoLayer;
+  }
+  await viewElement.whenLayerView(state.videoLayer);
+  console.log("the layerview is created");
+  if (state.videoLayer.fullExtent) {
+    viewElement.goTo(state.videoLayer.fullExtent);
+  }
+
+  updateFrameEffect();
+}
+
+function loadWebMap(id: string | null | undefined) {
+  state.webMap = new WebMap({
+    portalItem: {
+      id,
+    },
+  });
+
+  viewElement.map = state.webMap;
+}
+
 async function removeTestingProperties() {
   await state.videoLayer.load();
   state.videoLayer.autoplay = false;
@@ -371,4 +320,50 @@ async function removeTestingProperties() {
     sensorTrail: true,
   };
   state.videoLayer.visible = true;
+}
+
+function updateFrameEffect() {
+  state.videoLayer.frameEffect = `brightness(${frameEffectBrightnessSlider.value}%) contrast(${frameEffectContrastSlider.value}%) saturate(${frameEffectSaturateSlider.value}%)`;
+  if (frameEffectInvertSwitch.checked) {
+    state.videoLayer.frameEffect += " invert()";
+  }
+}
+
+function updateFrameOpacity(value: number | number[] | null) {
+  if (typeof value === "number") {
+    state.videoLayer.frameOpacity = value / 100;
+  } else if (Array.isArray(value) && typeof value[0] === "number") {
+    state.videoLayer.frameOpacity = value[0] / 100;
+  } else {
+    state.videoLayer.frameOpacity = 1;
+  }
+}
+
+function updateOpacity(value: number | number[] | null) {
+  if (typeof value === "number") {
+    state.videoLayer.opacity = value / 100;
+  } else if (Array.isArray(value) && typeof value[0] === "number") {
+    state.videoLayer.opacity = value[0] / 100;
+  } else {
+    state.videoLayer.opacity = 1;
+  }
+}
+
+async function updateVideoLayer(id: string) {
+  const layer = await Layer.fromPortalItem({
+    portalItem: new PortalItem({
+      id,
+    }),
+  });
+  state.webMap.layers.remove(state.videoLayer);
+  state.videoLayer = layer as VideoLayer;
+  await state.videoLayer.load();
+  updateFrameEffect();
+  updateOpacity(opacitySlider.value);
+  updateFrameOpacity(frameOpacitySlider.value);
+  state.webMap.layers.add(state.videoLayer);
+  videoPlayerElement.layer = state.videoLayer;
+  if (testingPropertiesSwitch.checked) {
+    await addTestingProperties();
+  }
 }
