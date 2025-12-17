@@ -1,5 +1,5 @@
 import Color from "@arcgis/core/Color.js";
-import esriConfig from "@arcgis/core/config.js";
+import config from "@arcgis/core/config.js";
 import Layer from "@arcgis/core/layers/Layer.js";
 import VideoLayer from "@arcgis/core/layers/VideoLayer.js";
 import PortalItem from "@arcgis/core/portal/PortalItem.js";
@@ -27,7 +27,7 @@ const state = {
   webMap: new WebMap(),
 };
 
-esriConfig.portalUrl = "https://devtesting.mapsdevext.arcgis.com/";
+config.portalUrl = "https://video-portal.idt.geocloud.com/portal";
 
 const frameEffectBrightnessSlider = document.querySelector(
   "#frame-effect-brightness-slider"
@@ -145,9 +145,7 @@ async function getPortalItems(portalUrl: string) {
 }
 
 async function init() {
-  const portalItems = await getPortalItems(
-    "https://video-portal.idt.geocloud.com/portal"
-  );
+  const portalItems = await getPortalItems(config.portalUrl);
 
   console.log("Portal Items:", portalItems);
 
@@ -162,7 +160,7 @@ async function init() {
 
   state.webMap = new WebMap({
     portalItem: {
-      id: "e61993e233b34bf4a12441b61129e15a",
+      id: "d2106b6d89d842c989e432bae5c368e0",
     },
   });
   state.webMap.layers.add(state.videoLayer);
@@ -219,7 +217,6 @@ async function updateVideoLayer(id: string) {
   const layer = await Layer.fromPortalItem({
     portalItem: new PortalItem({
       id,
-      portal: { url: "https://video-portal.idt.geocloud.com/portal" },
     }),
   });
   state.webMap.layers.remove(state.videoLayer);
@@ -298,7 +295,6 @@ async function addTestingProperties() {
     xoffset: 0,
     yoffset: 0,
   });
-  // @ts-ignore
   state.videoLayer.sensorSymbolOrientation = {
     source: "platformHeading", // "cameraAzimuth" or "platformHeading"
     symbolOffset: 0,
