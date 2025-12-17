@@ -93,7 +93,8 @@ frameEffectSaturateSlider.addEventListener("calciteSliderInput", () => {
 
 loadButton.addEventListener("click", async () => {
   console.log("load button clicked");
-  viewElement.itemId = state.webMap.portalItem?.id;
+  viewElement.map = state.webMap;
+  console.log(state.webMap.portalItem?.id);
 });
 
 saveButton.addEventListener("click", async () => {
@@ -103,17 +104,16 @@ saveButton.addEventListener("click", async () => {
 });
 
 saveAsButton.addEventListener("click", async () => {
-  await state.webMap.loadAll();
-  state.videoLayer.portalItem = null;
-  state.webMap.updateFrom(viewElement.view);
   console.log("save as button clicked");
+  await state.webMap.loadAll();
+  state.webMap.updateFrom(viewElement.view);
   const result = await state.webMap.saveAs(
     new PortalItem({ title: "My Video Layer Web Map" })
   );
-  console.log("Save As result:", result.id, result);
   state.webMap.portalItem = result;
   saveButton.disabled = false;
   loadButton.disabled = false;
+  console.log("Save As result:", result.id, result);
 });
 
 testingPropertiesSwitch.addEventListener("calciteSwitchChange", async () => {
