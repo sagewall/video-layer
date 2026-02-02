@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -10,10 +10,13 @@
     <calcite-shell>
       <arcgis-map>
         <arcgis-video-player slot="top-right"></arcgis-video-player>
-        <arcgis-layer-list slot="bottom-right"></arcgis-layer-list>
+        <arcgis-layer-list
+          selection-mode="single"
+          slot="bottom-right"
+        ></arcgis-layer-list>
         <calcite-block
           collapsible
-          heading="Opacity"
+          heading="On-map layer opacity"
           expanded
           slot="bottom-right"
         >
@@ -97,14 +100,10 @@
               >Save as</calcite-button
             >
           </calcite-block>
-          <calcite-block collapsible heading="Video Layers" expanded>
+          <calcite-block collapsible heading="Testing" expanded>
             <calcite-label layout="inline">
               Use testing properties
               <calcite-switch id="testing-properties-switch"></calcite-switch>
-            </calcite-label>
-            <calcite-label>
-              Video Layers
-              <calcite-select id="video-layer-select"></calcite-select>
             </calcite-label>
           </calcite-block>
         </div>
