@@ -395,5 +395,11 @@ watch(
     updateFrameEffect();
     updateFrameOpacity(frameOpacitySlider.value);
     updateOpacity(opacitySlider.value);
+
+    if (testingPropertiesSwitch.checked) {
+      await addTestingProperties();
+    } else {
+      await removeTestingProperties();
+    }
   },
 );
