@@ -1,6 +1,7 @@
 import Color from "@arcgis/core/Color.js";
 import config from "@arcgis/core/config.js";
 import { watch } from "@arcgis/core/core/reactiveUtils";
+import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 import type GroupLayer from "@arcgis/core/layers/GroupLayer";
 import Layer from "@arcgis/core/layers/Layer.js";
 import VideoLayer from "@arcgis/core/layers/VideoLayer.js";
@@ -10,6 +11,8 @@ import SimpleFillSymbol from "@arcgis/core/symbols/SimpleFillSymbol.js";
 import SimpleLineSymbol from "@arcgis/core/symbols/SimpleLineSymbol.js";
 import SimpleMarkerSymbol from "@arcgis/core/symbols/SimpleMarkerSymbol.js";
 import WebMap from "@arcgis/core/WebMap.js";
+import "@arcgis/map-components/components/arcgis-editor";
+import "@arcgis/map-components/components/arcgis-expand";
 import "@arcgis/map-components/components/arcgis-layer-list";
 import "@arcgis/map-components/components/arcgis-map";
 import "@arcgis/map-components/components/arcgis-video-player";
@@ -266,6 +269,20 @@ async function init() {
     });
   } catch (error) {
     console.log("Error loading portalItems", error);
+  }
+
+  try {
+    const featureLayer = new FeatureLayer({
+      portalItem: {
+        id: "05a4da61aa784efc98ea43d5904ec3b7",
+        portal: {
+          url: "https://jsapi.maps.arcgis.com",
+        },
+      },
+    });
+    state.webMap.layers.add(featureLayer);
+  } catch (error) {
+    console.log("Error loading editable feature layer", console.log(error));
   }
 
   viewElement.map = state.webMap;
