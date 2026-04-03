@@ -16,6 +16,7 @@ import "@arcgis/map-components/components/arcgis-expand";
 import "@arcgis/map-components/components/arcgis-layer-list";
 import "@arcgis/map-components/components/arcgis-map";
 import "@arcgis/map-components/components/arcgis-video-player";
+import "@arcgis/map-components/components/arcgis-zoom";
 import "@esri/calcite-components/components/calcite-block";
 import "@esri/calcite-components/components/calcite-button";
 import "@esri/calcite-components/components/calcite-label";

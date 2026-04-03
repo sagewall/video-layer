@@ -9,47 +9,45 @@
   <body>
     <calcite-shell>
       <arcgis-map>
-        <arcgis-video-player slot="top-right"></arcgis-video-player>
-        <arcgis-layer-list
-          selection-mode="single"
-          slot="bottom-right"
-        ></arcgis-layer-list>
-        <arcgis-expand slot="top-left">
-          <arcgis-editor></arcgis-editor>
-        </arcgis-expand>
-        <calcite-block
-          collapsible
-          heading="On-map layer opacity"
-          expanded
-          slot="bottom-right"
+        <arcgis-zoom slot="top-left"></arcgis-zoom>
+        <arcgis-expand
+          expand-icon="transparency"
+          expand-tooltip="On-map layer opacity"
+          slot="top-left"
         >
-          <calcite-label>
-            opacity (%)
-            <calcite-slider
-              id="opacity-slider"
-              value="100"
-              label-handles
-              label-ticks
-              max-label="100"
-              min-label="0"
-              ticks="100"
-            ></calcite-slider>
-          </calcite-label>
-          <calcite-label>
-            frameOpacity (%)
-            <calcite-slider
-              id="frame-opacity-slider"
-              value="100"
-              label-handles
-              label-ticks
-              max-label="100"
-              min-label="0"
-              ticks="100"
-            ></calcite-slider>
-          </calcite-label>
-        </calcite-block>
-        <div slot="bottom-left">
-          <calcite-block collapsible heading="Frame Effects" expanded>
+          <calcite-block expanded heading="On-map layer opacity">
+            <calcite-label>
+              opacity (%)
+              <calcite-slider
+                id="opacity-slider"
+                value="100"
+                label-handles
+                label-ticks
+                max-label="100"
+                min-label="0"
+                ticks="100"
+              ></calcite-slider>
+            </calcite-label>
+            <calcite-label>
+              frameOpacity (%)
+              <calcite-slider
+                id="frame-opacity-slider"
+                value="100"
+                label-handles
+                label-ticks
+                max-label="100"
+                min-label="0"
+                ticks="100"
+              ></calcite-slider>
+            </calcite-label>
+          </calcite-block>
+        </arcgis-expand>
+        <arcgis-expand
+          expand-icon="effects"
+          expand-tooltip="Frame effects"
+          slot="top-left"
+        >
+          <calcite-block expanded heading="Frame effects">
             <calcite-label>
               Invert
               <calcite-switch id="frame-effect-invert-switch"></calcite-switch>
@@ -94,8 +92,13 @@
               ></calcite-slider>
             </calcite-label>
           </calcite-block>
-
-          <calcite-block collapsible heading="Web Maps" expanded>
+        </arcgis-expand>
+        <arcgis-expand
+          expand-icon="map"
+          expand-tooltip="WebMap"
+          slot="top-left"
+        >
+          <calcite-block expanded heading="WebMap">
             <calcite-button disabled icon-start="save" id="save-button"
               >Save</calcite-button
             >
@@ -103,13 +106,27 @@
               >Save as</calcite-button
             >
           </calcite-block>
-          <calcite-block collapsible heading="Testing" expanded>
+        </arcgis-expand>
+        <arcgis-expand
+          expand-icon="test-data"
+          expand-tooltip="Testing properties"
+          slot="top-left"
+        >
+          <calcite-block expanded heading="Testing properties">
             <calcite-label layout="inline">
               Use testing properties
               <calcite-switch id="testing-properties-switch"></calcite-switch>
             </calcite-label>
           </calcite-block>
-        </div>
+        </arcgis-expand>
+        <arcgis-expand expand-tooltip="Editor" slot="top-left">
+          <arcgis-editor></arcgis-editor>
+        </arcgis-expand>
+        <arcgis-video-player slot="top-right"></arcgis-video-player>
+        <arcgis-layer-list
+          selection-mode="single"
+          slot="bottom-left"
+        ></arcgis-layer-list>
       </arcgis-map>
     </calcite-shell>
     <script type="module" src="/src/main.ts"></script>
