@@ -238,25 +238,35 @@ async function getPortalItems(portalUrl: string) {
 }
 
 async function init() {
-  const portalItems = await getPortalItems(config.portalUrl);
-  portalItems.forEach(async (portalItem: PortalItem, index: number) => {
-    console.log(portalItem.title);
-    const layer = await Layer.fromPortalItem({ portalItem });
-    await layer.load();
-    console.log(layer.title);
-    state.webMap.layers.add(layer);
+  try {
+    const portalItems = await getPortalItems(config.portalUrl);
+    portalItems.forEach(async (portalItem: PortalItem) => {
+      console.log(portalItem.title);
+      try {
+        const layer = await Layer.fromPortalItem({ portalItem });
+        await layer.load();
+        console.log(layer.title);
+        if (layer.loaded) {
+          state.webMap.layers.add(layer);
+        }
 
-    if (index === 0) {
-      if (layer.type === "video") {
-        state.videoLayer = layer as VideoLayer;
-      } else if (layer.type === "group") {
-        state.videoLayer = (layer as GroupLayer).layers.getItemAt(
-          0,
-        ) as VideoLayer;
+        if (layer.title === "Facility of Interest") {
+          if (layer.type === "video") {
+            state.videoLayer = layer as VideoLayer;
+          } else if (layer.type === "group") {
+            state.videoLayer = (layer as GroupLayer).layers.getItemAt(
+              0,
+            ) as VideoLayer;
+          }
+        }
+        videoPlayerElement.layer = state.videoLayer;
+      } catch (error) {
+        console.log("Error loading", portalItem.title, error);
       }
-      videoPlayerElement.layer = state.videoLayer;
-    }
-  });
+    });
+  } catch (error) {
+    console.log("Error loading portalItems", error);
+  }
 
   viewElement.map = state.webMap;
 
