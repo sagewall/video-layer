@@ -2,7 +2,6 @@ import Color from "@arcgis/core/Color.js";
 import config from "@arcgis/core/config.js";
 import { watch } from "@arcgis/core/core/reactiveUtils";
 import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
-import type GroupLayer from "@arcgis/core/layers/GroupLayer";
 import Layer from "@arcgis/core/layers/Layer.js";
 import VideoLayer from "@arcgis/core/layers/VideoLayer.js";
 import PortalItem from "@arcgis/core/portal/PortalItem.js";
@@ -29,17 +28,23 @@ import { airplanePath } from "./airplane-path";
 import "./style.css";
 
 const state: {
-  videoLayer: VideoLayer | null;
+  videoLayer: VideoLayer;
   webMap: WebMap;
 } = {
-  videoLayer: null,
+  videoLayer: new VideoLayer({
+    url: "https://idt-lab-03.esri.com/video/rest/services/Facility_of_Interest/VideoServer",
+  }),
   webMap: new WebMap({
     basemap: "topo-vector",
   }),
 };
 
-config.portalUrl = "https://dev0019062.esri.com/portal";
+// config.portalUrl = "https://dev0019062.esri.com/portal";
+config.portalUrl = "https://video-portal.idt.geocloud.com/portal";
 
+const addPortalLayersButton = document.querySelector(
+  "#add-portal-layers-button",
+)! as HTMLCalciteButtonElement;
 const frameEffectBrightnessSlider = document.querySelector(
   "#frame-effect-brightness-slider",
 )! as HTMLCalciteSliderElement;
@@ -76,6 +81,10 @@ const viewElement = document.querySelector(
 const videoPlayerElement = document.querySelector("arcgis-video-player")!;
 
 init();
+
+addPortalLayersButton.addEventListener("click", () =>
+  addPortalLayers(config.portalUrl),
+);
 
 frameEffectBrightnessSlider.addEventListener("calciteSliderInput", () => {
   updateFrameEffect();
@@ -129,6 +138,27 @@ testingPropertiesSwitch.addEventListener("calciteSwitchChange", async () => {
     await removeTestingProperties();
   }
 });
+
+async function addPortalLayers(portalUrl: string) {
+  try {
+    const portalItems = await getPortalItems(portalUrl);
+    portalItems.forEach(async (portalItem: PortalItem) => {
+      console.log(portalItem.title);
+      try {
+        const layer = await Layer.fromPortalItem({ portalItem });
+        await layer.load();
+        console.log(layer.title);
+        if (layer.loaded) {
+          state.webMap.layers.add(layer);
+        }
+      } catch (error) {
+        console.log("Error loading", portalItem.title, error);
+      }
+    });
+  } catch (error) {
+    console.log("Error loading portalItems", error);
+  }
+}
 
 async function addTestingProperties() {
   if (!state.videoLayer) {
@@ -243,43 +273,14 @@ async function getPortalItems(portalUrl: string) {
 
 async function init() {
   try {
-    const portalItems = await getPortalItems(config.portalUrl);
-    portalItems.forEach(async (portalItem: PortalItem) => {
-      console.log(portalItem.title);
-      try {
-        const layer = await Layer.fromPortalItem({ portalItem });
-        await layer.load();
-        console.log(layer.title);
-        if (layer.loaded) {
-          state.webMap.layers.add(layer);
-        }
-
-        if (layer.title === "Facility of Interest") {
-          if (layer.type === "video") {
-            state.videoLayer = layer as VideoLayer;
-          } else if (layer.type === "group") {
-            state.videoLayer = (layer as GroupLayer).layers.getItemAt(
-              0,
-            ) as VideoLayer;
-          }
-        }
-        videoPlayerElement.layer = state.videoLayer;
-      } catch (error) {
-        console.log("Error loading", portalItem.title, error);
-      }
-    });
+    state.webMap.layers.add(state.videoLayer);
   } catch (error) {
-    console.log("Error loading portalItems", error);
+    console.log("Error adding initial video layer", error);
   }
 
   try {
     const featureLayer = new FeatureLayer({
-      portalItem: {
-        id: "05a4da61aa784efc98ea43d5904ec3b7",
-        portal: {
-          url: "https://jsapi.maps.arcgis.com",
-        },
-      },
+      url: "https://services.arcgis.com/V6ZHFr6zdgNZuVG0/arcgis/rest/services/video-player-editing/FeatureServer",
     });
     state.webMap.layers.add(featureLayer);
   } catch (error) {
