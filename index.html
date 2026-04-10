@@ -131,11 +131,15 @@
         <arcgis-expand expand-tooltip="Editor" slot="top-left">
           <arcgis-editor></arcgis-editor>
         </arcgis-expand>
-        <arcgis-video-player slot="top-right"></arcgis-video-player>
-        <arcgis-layer-list
-          selection-mode="single"
-          slot="bottom-left"
-        ></arcgis-layer-list>
+        <arcgis-expand expand-tooltip="Video Player" expanded slot="top-right">
+          <arcgis-video-player></arcgis-video-player>
+        </arcgis-expand>
+        <arcgis-expand expand-tooltip="Layer List" expanded slot="bottom-left">
+          <arcgis-layer-list
+            show-heading
+            selection-mode="single"
+          ></arcgis-layer-list>
+        </arcgis-expand>
       </arcgis-map>
     </calcite-shell>
     <script type="module" src="/src/main.ts"></script>

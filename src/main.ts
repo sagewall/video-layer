@@ -106,6 +106,24 @@ frameEffectSaturateSlider.addEventListener("calciteSliderInput", () => {
   updateFrameEffect();
 });
 
+layerListElement.listItemCreatedFunction = (event) => {
+  if (event.item.layer?.type === "video") {
+    const { item } = event;
+    const inlineVideoPlayerHost = document.createElement("div");
+    const inlineVideoPlayer = document.createElement(
+      "arcgis-video-player",
+    ) as HTMLArcgisVideoPlayerElement;
+    inlineVideoPlayer.inline = true;
+    inlineVideoPlayer.layer = item.layer as VideoLayer;
+    inlineVideoPlayerHost.appendChild(inlineVideoPlayer);
+
+    item.panel = {
+      content: inlineVideoPlayerHost,
+      icon: "play",
+    };
+  }
+};
+
 opacitySlider.addEventListener("calciteSliderInput", () => {
   updateOpacity(opacitySlider.value);
 });
