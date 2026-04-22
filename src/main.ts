@@ -422,6 +422,7 @@ function updateOpacity(value: number | number[] | null) {
   }
 }
 
+await layerListElement.componentOnReady();
 watch(
   () => layerListElement.selectedItems.getItemAt(0),
   async (selectedListItem) => {
