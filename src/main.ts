@@ -39,6 +39,7 @@ const state: {
   }),
 };
 
+// config.portalUrl = "https://devtesting.mapsdevext.arcgis.com/";
 // config.portalUrl = "https://dev0019062.esri.com/portal";
 config.portalUrl = "https://video-portal.idt.geocloud.com/portal";
 
