@@ -114,6 +114,7 @@ layerListElement.listItemCreatedFunction = (event) => {
     const inlineVideoPlayer = document.createElement(
       "arcgis-video-player",
     ) as HTMLArcgisVideoPlayerElement;
+    inlineVideoPlayer.autoDestroyDisabled = true;
     inlineVideoPlayer.inline = true;
     inlineVideoPlayer.layer = item.layer as VideoLayer;
     inlineVideoPlayerHost.appendChild(inlineVideoPlayer);
