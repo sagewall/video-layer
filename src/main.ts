@@ -224,6 +224,14 @@ async function addTestingProperties() {
   });
   state.videoLayer.muted = true;
   state.videoLayer.opacity = 0.5;
+  state.videoLayer.sensorPathSymbol = new SimpleLineSymbol({
+    cap: "square",
+    color: new Color([30, 20, 200, 0.5]),
+    join: "round",
+    miterLimit: 1,
+    style: "dot",
+    width: 1,
+  });
   state.videoLayer.sensorSightLineSymbol = new SimpleLineSymbol({
     cap: "round",
     color: new Color([255, 255, 0, 1]),
@@ -267,6 +275,7 @@ async function addTestingProperties() {
     frameOutline: true,
     lineOfSight: true,
     sensorLocation: true,
+    sensorPath: true,
     sensorTrail: true,
   };
   state.videoLayer.visible = true;
@@ -356,6 +365,11 @@ async function removeTestingProperties() {
   });
   state.videoLayer.muted = false;
   state.videoLayer.opacity = 1;
+  state.videoLayer.sensorPathSymbol = new SimpleLineSymbol({
+    color: new Color([0, 0, 0]),
+    style: "dash",
+    width: 1,
+  });
   state.videoLayer.sensorSightLineSymbol = new SimpleLineSymbol({
     color: new Color([255, 127, 0]),
     width: 1,
@@ -382,6 +396,7 @@ async function removeTestingProperties() {
     frameOutline: true,
     lineOfSight: true,
     sensorLocation: true,
+    sensorPath: true,
     sensorTrail: true,
   };
   state.videoLayer.visible = true;
