@@ -32,7 +32,7 @@ const state: {
   webMap: WebMap;
 } = {
   videoLayer: new VideoLayer({
-    url: "https://idt-lab-03.esri.com/video/rest/services/Facility_of_Interest/VideoServer",
+    url: "https://video-server.idt.geocloud.com/video/rest/services/Exercise_1/VideoServer",
   }),
   webMap: new WebMap({
     basemap: "topo-vector",
