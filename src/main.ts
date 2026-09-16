@@ -1,36 +1,60 @@
 import Color from "@arcgis/core/Color.js";
 import config from "@arcgis/core/config.js";
-import { watch } from "@arcgis/core/core/reactiveUtils";
 import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 import Layer from "@arcgis/core/layers/Layer.js";
+import type { TelemetryDisplayType } from "@arcgis/core/layers/list/types.js";
 import VideoLayer from "@arcgis/core/layers/VideoLayer.js";
 import PortalItem from "@arcgis/core/portal/PortalItem.js";
 import request from "@arcgis/core/request.js";
+import type ActionToggle from "@arcgis/core/support/actions/ActionToggle.js";
 import SimpleFillSymbol from "@arcgis/core/symbols/SimpleFillSymbol.js";
 import SimpleLineSymbol from "@arcgis/core/symbols/SimpleLineSymbol.js";
 import SimpleMarkerSymbol from "@arcgis/core/symbols/SimpleMarkerSymbol.js";
 import WebMap from "@arcgis/core/WebMap.js";
 import "@arcgis/map-components/components/arcgis-editor";
 import "@arcgis/map-components/components/arcgis-expand";
-import "@arcgis/map-components/components/arcgis-layer-list";
+import "@arcgis/map-components/components/arcgis-layer-list-next";
 import "@arcgis/map-components/components/arcgis-map";
 import "@arcgis/map-components/components/arcgis-video-player";
 import "@arcgis/map-components/components/arcgis-zoom";
 import "@esri/calcite-components/components/calcite-block";
 import "@esri/calcite-components/components/calcite-button";
+import "@esri/calcite-components/components/calcite-color-picker";
 import "@esri/calcite-components/components/calcite-label";
-import "@esri/calcite-components/components/calcite-option";
-import "@esri/calcite-components/components/calcite-select";
+import "@esri/calcite-components/components/calcite-panel";
 import "@esri/calcite-components/components/calcite-shell";
 import "@esri/calcite-components/components/calcite-slider";
 import "@esri/calcite-components/components/calcite-switch";
 import { airplanePath } from "./airplane-path";
 import "./style.css";
 
+type TelemetrySymbolContext = {
+  action: ActionToggle;
+  layer: VideoLayer;
+  name: TelemetryDisplayType;
+};
+
+type TelemetrySymbolProperty =
+  | "frameCenterSymbol"
+  | "frameOutlineSymbol"
+  | "sensorPathSymbol"
+  | "sensorSightLineSymbol"
+  | "sensorSymbol"
+  | "sensorTrailSymbol";
+
+type TelemetrySymbolDefinition = {
+  label: string;
+  property: TelemetrySymbolProperty;
+};
+
+const editTelemetrySymbolActionId = "edit-telemetry-symbol";
+
 const state: {
+  telemetrySymbolContext: TelemetrySymbolContext | null;
   videoLayer: VideoLayer;
   webMap: WebMap;
 } = {
+  telemetrySymbolContext: null,
   videoLayer: new VideoLayer({
     url: "https://video-server.idt.geocloud.com/video/rest/services/Exercise_1/VideoServer",
   }),
@@ -38,6 +62,37 @@ const state: {
     basemap: "topo-vector",
   }),
 };
+
+const telemetrySymbolDefinitions = {
+  frame: null,
+  frameCenter: {
+    label: "Frame center",
+    property: "frameCenterSymbol",
+  },
+  frameOutline: {
+    label: "Frame outline",
+    property: "frameOutlineSymbol",
+  },
+  lineOfSight: {
+    label: "Sight line",
+    property: "sensorSightLineSymbol",
+  },
+  sensorLocation: {
+    label: "Sensor",
+    property: "sensorSymbol",
+  },
+  sensorPath: {
+    label: "Sensor path",
+    property: "sensorPathSymbol",
+  },
+  sensorTrail: {
+    label: "Sensor trail",
+    property: "sensorTrailSymbol",
+  },
+} as const satisfies Record<
+  TelemetryDisplayType,
+  TelemetrySymbolDefinition | null
+>;
 
 // config.portalUrl = "https://devtesting.mapsdevext.arcgis.com/";
 // config.portalUrl = "https://dev0019062.esri.com/portal";
@@ -62,8 +117,8 @@ const frameOpacitySlider = document.querySelector(
   "#frame-opacity-slider",
 )! as HTMLCalciteSliderElement;
 const layerListElement = document.querySelector(
-  "arcgis-layer-list",
-)! as HTMLArcgisLayerListElement;
+  "arcgis-layer-list-next",
+)! as HTMLArcgisLayerListNextElement;
 const opacitySlider = document.querySelector(
   "#opacity-slider",
 )! as HTMLCalciteSliderElement;
@@ -73,6 +128,12 @@ const saveAsButton = document.querySelector(
 const saveButton = document.querySelector(
   "#save-button",
 )! as HTMLCalciteButtonElement;
+const telemetryColorPicker = document.querySelector(
+  "#telemetry-color-picker",
+)! as HTMLCalciteColorPickerElement;
+const telemetrySymbolPanel = document.querySelector(
+  "#telemetry-symbol-panel",
+)! as HTMLCalcitePanelElement;
 const testingPropertiesSwitch = document.querySelector(
   "#testing-properties-switch",
 )! as HTMLCalciteSwitchElement;
@@ -108,23 +169,59 @@ frameEffectSaturateSlider.addEventListener("calciteSliderInput", () => {
 });
 
 layerListElement.listItemCreatedFunction = (event) => {
-  if (event.item.layer?.type === "video") {
-    const { item } = event;
-    const inlineVideoPlayerHost = document.createElement("div");
+  const { item } = event;
+
+  if (item.layer?.type === "video" && item.content.type === "layer") {
     const inlineVideoPlayer = document.createElement(
       "arcgis-video-player",
     ) as HTMLArcgisVideoPlayerElement;
     inlineVideoPlayer.autoDestroyDisabled = true;
     inlineVideoPlayer.inline = true;
     inlineVideoPlayer.layer = item.layer as VideoLayer;
-    inlineVideoPlayerHost.appendChild(inlineVideoPlayer);
 
     item.panel = {
-      content: inlineVideoPlayerHost,
+      content: inlineVideoPlayer,
       icon: "follow-play",
     };
   }
+
+  if (
+    item.layer?.type === "video" &&
+    item.content.type === "telemetry-display" &&
+    getTelemetrySymbol(item.layer as VideoLayer, item.content.name)
+  ) {
+    item.actionsSections = [
+      [
+        {
+          icon: "styling",
+          id: editTelemetrySymbolActionId,
+          title: "Edit symbol color",
+          type: "toggle",
+          value: false,
+        },
+      ],
+    ];
+  }
 };
+
+layerListElement.addEventListener("arcgisTriggerAction", (event) => {
+  const { action, item } = event.detail;
+
+  if (
+    action.id !== editTelemetrySymbolActionId ||
+    action.type !== "toggle" ||
+    item.layer?.type !== "video" ||
+    item.content.type !== "telemetry-display"
+  ) {
+    return;
+  }
+
+  toggleTelemetrySymbolEditor(
+    action,
+    item.layer as VideoLayer,
+    item.content.name,
+  );
+});
 
 opacitySlider.addEventListener("calciteSliderInput", () => {
   updateOpacity(opacitySlider.value);
@@ -151,6 +248,19 @@ saveAsButton.addEventListener("click", async () => {
   console.log("Save As result:", result.id, result);
 });
 
+telemetryColorPicker.addEventListener("calciteColorPickerInput", () => {
+  const colorValue = telemetryColorPicker.value;
+  const telemetrySymbolContext = state.telemetrySymbolContext;
+
+  if (typeof colorValue === "string" && telemetrySymbolContext) {
+    setTelemetrySymbolColor(
+      telemetrySymbolContext.layer,
+      telemetrySymbolContext.name,
+      new Color(colorValue),
+    );
+  }
+});
+
 testingPropertiesSwitch.addEventListener("calciteSwitchChange", async () => {
   if (testingPropertiesSwitch.checked) {
     await addTestingProperties();
@@ -162,7 +272,7 @@ testingPropertiesSwitch.addEventListener("calciteSwitchChange", async () => {
 async function addPortalLayers(portalUrl: string) {
   try {
     const portalItems = await getPortalItems(portalUrl);
-    portalItems.forEach(async (portalItem: PortalItem) => {
+    for (const portalItem of portalItems as PortalItem[]) {
       console.log(portalItem.title);
       try {
         const layer = await Layer.fromPortalItem({ portalItem });
@@ -174,19 +284,13 @@ async function addPortalLayers(portalUrl: string) {
       } catch (error) {
         console.log("Error loading", portalItem.title, error);
       }
-    });
+    }
   } catch (error) {
     console.log("Error loading portalItems", error);
   }
 }
 
 async function addTestingProperties() {
-  if (!state.videoLayer) {
-    return;
-  }
-  if (!state.videoLayer) {
-    return;
-  }
   await state.videoLayer.load();
   state.videoLayer.autoplay = true;
   state.videoLayer.blendMode = "vivid-light";
@@ -280,6 +384,7 @@ async function addTestingProperties() {
     sensorTrail: true,
   };
   state.videoLayer.visible = true;
+  updateTelemetrySymbolColorPicker();
 }
 
 async function getPortalItems(portalUrl: string) {
@@ -300,6 +405,37 @@ async function getPortalItems(portalUrl: string) {
   return portalItems;
 }
 
+function getTelemetrySymbol(layer: VideoLayer, name: TelemetryDisplayType) {
+  const definition = telemetrySymbolDefinitions[name];
+  const symbol = definition ? layer[definition.property] : null;
+
+  return symbol instanceof SimpleFillSymbol ||
+    symbol instanceof SimpleLineSymbol ||
+    symbol instanceof SimpleMarkerSymbol
+    ? symbol
+    : null;
+}
+
+function getTelemetrySymbolColor(
+  layer: VideoLayer,
+  name: TelemetryDisplayType,
+) {
+  const symbol = getTelemetrySymbol(layer, name);
+
+  if (name === "frameOutline" && symbol instanceof SimpleFillSymbol) {
+    return symbol.outline?.color;
+  }
+
+  if (
+    symbol instanceof SimpleMarkerSymbol &&
+    (symbol.style === "cross" || symbol.style === "x")
+  ) {
+    return symbol.outline?.color;
+  }
+
+  return symbol?.color;
+}
+
 async function init() {
   try {
     state.webMap.layers.add(state.videoLayer);
@@ -313,7 +449,7 @@ async function init() {
     });
     state.webMap.layers.add(featureLayer);
   } catch (error) {
-    console.log("Error loading editable feature layer", console.log(error));
+    console.log("Error loading editable feature layer", error);
   }
 
   viewElement.map = state.webMap;
@@ -321,15 +457,12 @@ async function init() {
   await viewElement.viewOnReady();
   console.log("the view is ready");
 
-  if (state.videoLayer && state.videoLayer.loaded) {
+  if (state.videoLayer.loaded) {
     console.log("the layer is loaded");
     videoPlayerElement.layer = state.videoLayer;
   } else {
-    await state.videoLayer?.load();
+    await state.videoLayer.load();
     videoPlayerElement.layer = state.videoLayer;
-  }
-  if (!state.videoLayer) {
-    return;
   }
   await viewElement.whenLayerView(state.videoLayer);
   console.log("the layerview is created");
@@ -341,9 +474,6 @@ async function init() {
 }
 
 async function removeTestingProperties() {
-  if (!state.videoLayer) {
-    return;
-  }
   await state.videoLayer.load();
   state.videoLayer.autoplay = false;
   state.videoLayer.blendMode = "normal";
@@ -401,12 +531,77 @@ async function removeTestingProperties() {
     sensorTrail: true,
   };
   state.videoLayer.visible = true;
+  updateTelemetrySymbolColorPicker();
+}
+
+function hideTelemetrySymbolEditor() {
+  if (state.telemetrySymbolContext) {
+    state.telemetrySymbolContext.action.value = false;
+  }
+
+  state.telemetrySymbolContext = null;
+  telemetrySymbolPanel.hidden = true;
+}
+
+function setTelemetrySymbolColor(
+  layer: VideoLayer,
+  name: TelemetryDisplayType,
+  color: Color,
+) {
+  const definition = telemetrySymbolDefinitions[name];
+  const symbol = getTelemetrySymbol(layer, name)?.clone();
+
+  if (!definition || !symbol) {
+    return;
+  }
+
+  if (name === "frameOutline" && symbol instanceof SimpleFillSymbol) {
+    if (symbol.outline) {
+      symbol.outline.color = color;
+    } else {
+      symbol.outline = new SimpleLineSymbol({ color });
+    }
+  } else if (symbol instanceof SimpleMarkerSymbol) {
+    symbol.outline.color = color;
+  } else {
+    symbol.color = color;
+  }
+
+  layer.set(definition.property, symbol);
+}
+
+function toggleTelemetrySymbolEditor(
+  action: ActionToggle,
+  layer: VideoLayer,
+  name: TelemetryDisplayType,
+) {
+  if (!action.value) {
+    if (state.telemetrySymbolContext?.action === action) {
+      hideTelemetrySymbolEditor();
+    }
+    return;
+  }
+
+  const color = getTelemetrySymbolColor(layer, name);
+  const definition = telemetrySymbolDefinitions[name];
+
+  if (!color || !definition) {
+    action.value = false;
+    return;
+  }
+
+  if (state.telemetrySymbolContext) {
+    state.telemetrySymbolContext.action.value = false;
+  }
+
+  action.value = true;
+  state.telemetrySymbolContext = { action, layer, name };
+  telemetryColorPicker.value = color.toHex({ digits: 8 });
+  telemetrySymbolPanel.hidden = false;
+  telemetrySymbolPanel.heading = definition.label;
 }
 
 function updateFrameEffect() {
-  if (!state.videoLayer) {
-    return;
-  }
   state.videoLayer.frameEffect = `brightness(${frameEffectBrightnessSlider.value}%) contrast(${frameEffectContrastSlider.value}%) saturate(${frameEffectSaturateSlider.value}%)`;
   if (frameEffectInvertSwitch.checked) {
     state.videoLayer.frameEffect += " invert()";
@@ -414,9 +609,6 @@ function updateFrameEffect() {
 }
 
 function updateFrameOpacity(value: number | number[] | null) {
-  if (!state.videoLayer) {
-    return;
-  }
   if (typeof value === "number") {
     state.videoLayer.frameOpacity = value / 100;
   } else if (Array.isArray(value) && typeof value[0] === "number") {
@@ -427,9 +619,6 @@ function updateFrameOpacity(value: number | number[] | null) {
 }
 
 function updateOpacity(value: number | number[] | null) {
-  if (!state.videoLayer) {
-    return;
-  }
   if (typeof value === "number") {
     state.videoLayer.opacity = value / 100;
   } else if (Array.isArray(value) && typeof value[0] === "number") {
@@ -439,32 +628,44 @@ function updateOpacity(value: number | number[] | null) {
   }
 }
 
-await layerListElement.componentOnReady();
-watch(
-  () => layerListElement.selectedItems.getItemAt(0),
-  async (selectedListItem) => {
-    console.log("Selected List Item:", selectedListItem);
-    if (!selectedListItem) {
-      return;
-    }
-    const { layer } = selectedListItem;
-    if (!layer) {
-      return;
-    }
-    await layer.load();
-    if (layer.type === "video") {
-      videoPlayerElement.layer = layer as VideoLayer;
-      (layer as VideoLayer).play();
-      state.videoLayer = layer as VideoLayer;
-    }
-    updateFrameEffect();
-    updateFrameOpacity(frameOpacitySlider.value);
-    updateOpacity(opacitySlider.value);
+function updateTelemetrySymbolColorPicker() {
+  const telemetrySymbolContext = state.telemetrySymbolContext;
 
-    if (testingPropertiesSwitch.checked) {
-      await addTestingProperties();
-    } else {
-      await removeTestingProperties();
-    }
-  },
-);
+  if (!telemetrySymbolContext) {
+    return;
+  }
+
+  const color = getTelemetrySymbolColor(
+    telemetrySymbolContext.layer,
+    telemetrySymbolContext.name,
+  );
+
+  if (color) {
+    telemetryColorPicker.value = color.toHex({ digits: 8 });
+  }
+}
+
+layerListElement.addEventListener("arcgisSelectedItemsChange", async () => {
+  const selectedListItem = layerListElement.selectedItems.getItemAt(0);
+
+  if (
+    selectedListItem?.content.type !== "layer" ||
+    selectedListItem.layer?.type !== "video"
+  ) {
+    return;
+  }
+
+  const videoLayer = selectedListItem.layer as VideoLayer;
+  await videoLayer.load();
+  videoPlayerElement.layer = videoLayer;
+  state.videoLayer = videoLayer;
+  updateFrameEffect();
+  updateFrameOpacity(frameOpacitySlider.value);
+  updateOpacity(opacitySlider.value);
+
+  if (testingPropertiesSwitch.checked) {
+    await addTestingProperties();
+  } else {
+    await removeTestingProperties();
+  }
+});
