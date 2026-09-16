@@ -121,7 +121,7 @@ layerListElement.listItemCreatedFunction = (event) => {
 
     item.panel = {
       content: inlineVideoPlayerHost,
-      icon: "play",
+      icon: "follow-play",
     };
   }
 };
